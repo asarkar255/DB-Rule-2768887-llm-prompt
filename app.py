@@ -6,7 +6,7 @@ import re
 from datetime import date
 
 app = FastAPI(
-    title="LLM Prompt Builder (with explicit request + prefers suggestion SQL with DRAFT)"
+    title="LLM Prompt Builder (request included inside llm_prompt + prefers suggestion SQL with DRAFT)"
 )
 
 # ---------- Models ----------
@@ -133,21 +133,27 @@ def build_llm_prompt(payload: InputPayload):
     except json.JSONDecodeError as e:
         return {"error": f"findings_json is not valid JSON: {e}"}
 
-    prompts: List[str] = []
-    for f in findings:
-        sql = choose_best_sql(f)
-        if sql:
-            prompts.append(sql)
-
+    # Build request text first (so we can also put it inside llm_prompt)
     today_str = date.today().strftime("%Y-%m-%d")
     bullets = default_policy_bullets(today_str)
     if payload.extra_policy_bullets:
         bullets.extend(payload.extra_policy_bullets)
+    request_text = build_request_text(payload, bullets)
+
+    # Build SQL snippets, preferring 'suggestion' (to keep DRAFT) over 'snippet'
+    sql_snippets: List[str] = []
+    for f in findings:
+        sql = choose_best_sql(f)
+        if sql:
+            sql_snippets.append(sql)
+
+    # IMPORTANT CHANGE: include the request INSIDE llm_prompt as the first element
+    llm_prompt: List[str] = [request_text] + sql_snippets
 
     return {
         "assessment": build_assessment(findings),
-        "request": build_request_text(payload, bullets),
-        "llm_prompt": prompts
+        "request": request_text,      # still returned separately
+        "llm_prompt": llm_prompt      # request is now index 0
     }
 
 
