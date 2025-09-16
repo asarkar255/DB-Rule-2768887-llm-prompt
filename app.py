@@ -102,7 +102,7 @@ def default_policy_bullets(today_str: str) -> List[str]:
     return [
         "Remediate the ABAP code EXACTLY following these bullets.",
         "Apply conditional rules (e.g., draft/active predicates) ONLY when the relevant columns exist in the referenced tables/views.",
-        "For SELECTs reading VBRP/VBRK in this customer landscape, append 'AND b~draft = space' and 'AND c~draft = space' (or matching aliases) when those columns exist.",
+        "For SELECTs reading VBRP/VBRK append 'AND b~draft = space' and 'AND c~draft = space' (or matching aliases) when those columns exist.",
         "Avoid SELECT *; use explicit field lists. Keep S/4HANA Open SQL syntax (comma-separated field lists, @ host-variable escapes).",
         "Do NOT add ORDER BY to SELECT SINGLE. For top-1 by criterion, use 'ORDER BY … UP TO 1 ROWS'.",
         "When FOR ALL ENTRIES is used, guard with 'IF it[] IS NOT INITIAL.' and deduplicate keys before FAE.",
